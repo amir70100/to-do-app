@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tasks</title>
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'todo/css/style.css' %}">
+</head>
+<body>
+
+<h1>My Tasks</h1>
+
+<form method="post" action="{% url 'logout' %}">
+    {% csrf_token %}
+    <button type="submit">Log out</button>
+</form>
+
+<div class="task-list">
+    <a class="btn-new" href="{% url 'todo:task-create' %}">new post</a>
+    {% for task in tasks %}
+        <div class="task-card {% if task.completed %}done{% endif %}">
+            <label class="task-check">
+                <input type="checkbox" class="task-toggle" data-url="{% url 'todo:task-toggle' task.pk %}" {% if task.completed %}checked{% endif %}>
+                <span class="checkmark"></span>
+            </label>
+            <div class="task-info">
+                <span class="task-title">{{ task.title }}</span>
+                <span class="task-date">{{ task.created_at }}</span>
+            </div>
+            <div class="task-actions">
+                <a class="btn-edit" href="{% url 'todo:task-edit' task.pk %}">edit</a>
+                <a class="btn-delete" href="{% url 'todo:task-delete' task.pk %}">Delete</a>
+            </div>
+        </div>
+    {% empty %}
+        <div class="task-empty">No tasks yet.</div>
+    {% endfor %}
+</div>
+
+<script src="{% static 'todo/js/main.js' %}"></script>
+
+</body>
+</html>
