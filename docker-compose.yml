@@ -1,5 +1,6 @@
 services:
   backend:
+    # Build and expose the Django development server with live source mounting.
     build: .
     container_name: todo-backend
     ports:

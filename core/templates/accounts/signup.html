@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html>
+<html lang="fa">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -9,12 +9,53 @@
 </head>
 <body>
 
-<form method="post">
-    {% csrf_token %}
-    {{ form.as_p }}
+<div class="auth-container">
+    <div class="auth-card">
+        <div class="auth-header">
+            <h1>Sign Up</h1>
+            <p>Create a new account</p>
+        </div>
 
-    <button type="submit">Sign Up</button>
-</form>
+        {# Keep validation feedback visible when account creation fails. #}
+        {% if form.errors %}
+            <div class="alert alert-error">
+                Please correct the errors below.
+            </div>
+        {% endif %}
+
+        <form method="post" novalidate>
+            {% csrf_token %}
+            {{ form.non_field_errors }}
+
+            <div class="field">
+                <label for="id_username">Username</label>
+                {{ form.username }}
+            </div>
+
+            <div class="field">
+                <label for="id_email">Email</label>
+                {{ form.email }}
+            </div>
+
+            <div class="field">
+                <label for="id_password1">Password</label>
+                {{ form.password1 }}
+            </div>
+
+            <div class="field">
+                <label for="id_password2">Confirm Password</label>
+                {{ form.password2 }}
+            </div>
+
+            <button type="submit" class="btn btn-primary btn-block">Sign Up</button>
+        </form>
+
+        <p class="auth-footer">
+            Already have an account?
+            <a href="{% url 'login' %}">Login</a>
+        </p>
+    </div>
+</div>
 
 </body>
 </html>

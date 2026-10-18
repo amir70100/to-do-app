@@ -12,7 +12,7 @@ https://docs.djangoproject.com/en/6.1/ref/settings/
 
 from pathlib import Path
 
-# Build paths inside the project like this: BASE_DIR / 'subdir'.
+# Resolve project paths from this settings file so they work from any directory.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 
@@ -28,7 +28,7 @@ DEBUG = True
 ALLOWED_HOSTS = []
 
 
-# Application definition
+# Enable Django's built-in apps, the task app, and Django REST Framework.
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -38,6 +38,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'todo',
+    "rest_framework",
 ]
 
 MIDDLEWARE = [
@@ -70,7 +71,7 @@ TEMPLATES = [
 WSGI_APPLICATION = 'core.wsgi.application'
 
 
-# Database
+# Use a local SQLite database for this project's default development setup.
 # https://docs.djangoproject.com/en/6.1/ref/settings/#databases
 
 DATABASES = {
@@ -81,7 +82,7 @@ DATABASES = {
 }
 
 
-# Password validation
+# Apply Django's standard checks when users choose passwords.
 # https://docs.djangoproject.com/en/6.1/ref/settings/#auth-password-validators
 
 AUTH_PASSWORD_VALIDATORS = [
@@ -100,7 +101,7 @@ AUTH_PASSWORD_VALIDATORS = [
 ]
 
 
-# Internationalization
+# Configure the default language, timezone handling, and translation support.
 # https://docs.djangoproject.com/en/6.1/topics/i18n/
 
 LANGUAGE_CODE = 'en-us'
@@ -112,13 +113,13 @@ USE_I18N = True
 USE_TZ = True
 
 
-# Static files (CSS, JavaScript, Images)
+# Set the URL prefix used to serve static assets.
 # https://docs.djangoproject.com/en/6.1/howto/static-files/
 
 STATIC_URL = 'static/'
 
 
-# Email
+# Print outgoing email to the console in the default development configuration.
 # https://docs.djangoproject.com/en/6.1/topics/email/#topic-email-configuration
 
 MAILERS = {

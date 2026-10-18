@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="fa">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>تسک‌ها</title>
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'todo/css/style.css' %}">
+</head>
+<body>
+
+<div class="app-shell">
+    <header class="app-header">
+        <div class="brand">
+            <span class="brand-mark">✓</span>
+            <span class="brand-name">TASK<span>LY</span></span>
+        </div>
+        <div class="user-area">
+            <span class="user-name">{% if user.is_authenticated %}{{ user.get_short_name|default:user.email }}{% else %}Guest{% endif %}</span>
+            <form method="post" action="{% url 'logout' %}" class="logout-form" style="display:inline;">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-outline btn-sm">Logout</button>
+            </form>
+        </div>
+    </header>
+
+    <main class="app-main">
+        <div class="page-header">
+            <h1>My Tasks</h1>
+            <span class="badge badge-info" id="stats-badge">0 tasks</span>
+        </div>
+
+        <form id="task-create-form" class="task-form-card">
+            <div class="input-group">
+                <input type="text" id="task-title" name="title" placeholder="Enter new task..." maxlength="200" autocomplete="off">
+                <button type="submit" class="btn btn-primary">Add</button>
+            </div>
+            <div id="create-error" class="alert alert-error hidden"></div>
+        </form>
+
+        <div id="task-list" class="task-list">
+            <!-- JavaScript inserts task cards into this container. -->
+        </div>
+
+        <div id="empty-state" class="task-empty hidden">
+            <div class="empty-icon">📭</div>
+            <p>No tasks yet. Create a new task.</p>
+        </div>
+    </main>
+</div>
+
+<!-- The edit dialog is populated and controlled by the task-list script. -->
+<div id="edit-modal" class="modal hidden" aria-hidden="true">
+    <div class="modal-backdrop" id="modal-backdrop"></div>
+    <div class="modal-panel">
+        <div class="modal-header">
+            <h3>Edit Task</h3>
+            <button class="modal-close" id="modal-close">&times;</button>
+        </div>
+        <form id="task-edit-form">
+            <input type="hidden" id="edit-task-id">
+            <div class="field">
+                <label>Task Title</label>
+                <input type="text" id="edit-task-title" name="title" maxlength="200" required>
+            </div>
+            <div class="modal-actions">
+                <button type="button" class="btn btn-outline" id="modal-cancel">Cancel</button>
+                <button type="submit" class="btn btn-primary">Save Changes</button>
+            </div>
+            <div id="edit-error" class="alert alert-error hidden"></div>
+        </form>
+    </div>
+</div>
+
+<script src="{% static 'todo/js/main.js' %}"></script>
+
+</body>
+</html>

@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html>
+<html lang="fa">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -9,14 +9,43 @@
 </head>
 <body>
 
-<form method="post">
-    {% csrf_token %}
-    {{form.as_p}}
-    
-    <button type="submit">Login</button>
-</form>
-<br>
+<div class="auth-container">
+    <div class="auth-card">
+        <div class="auth-header">
+            <h1>Login</h1>
+            <p>Welcome to the task manager</p>
+        </div>
 
-<p>Don't have an account? <a href="{% url 'signup' %}">Sign Up</a></p>
+        {# Show one concise message instead of exposing authentication details. #}
+        {% if form.errors %}
+            <div class="alert alert-error">
+                Invalid username or password.
+            </div>
+        {% endif %}
+
+        <form method="post" novalidate>
+            {% csrf_token %}
+            {{ form.non_field_errors }}
+
+            <div class="field">
+                <label for="id_username">Username or Email</label>
+                {{ form.username }}
+            </div>
+
+            <div class="field">
+                <label for="id_password">Password</label>
+                {{ form.password }}
+            </div>
+
+            <button type="submit" class="btn btn-primary btn-block">Login</button>
+        </form>
+
+        <p class="auth-footer">
+            Don't have an account?
+            <a href="{% url 'signup' %}">Sign up</a>
+        </p>
+    </div>
+</div>
+
 </body>
 </html>
