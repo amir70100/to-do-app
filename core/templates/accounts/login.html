@@ -17,25 +17,19 @@
         </div>
 
         {# Show one concise message instead of exposing authentication details. #}
-        {% if form.errors %}
-            <div class="alert alert-error">
-                Invalid username or password.
-            </div>
-        {% endif %}
-
-        <form method="post" novalidate>
-            {% csrf_token %}
-            {{ form.non_field_errors }}
+        <form id="login-form" novalidate>
 
             <div class="field">
-                <label for="id_username">Username or Email</label>
-                {{ form.username }}
+                <label for="login-email">Email</label>
+                <input id="login-email" name="email" type="email" autocomplete="email" required>
             </div>
 
             <div class="field">
-                <label for="id_password">Password</label>
-                {{ form.password }}
+                <label for="login-password">Password</label>
+                <input id="login-password" name="password" type="password" autocomplete="current-password" required>
             </div>
+
+            <div id="login-error" class="alert alert-error hidden" role="alert"></div>
 
             <button type="submit" class="btn btn-primary btn-block">Login</button>
         </form>
@@ -46,6 +40,35 @@
         </p>
     </div>
 </div>
+
+<script>
+  document.getElementById('login-form').addEventListener('submit', async function (event) {
+    event.preventDefault();
+    const error = document.getElementById('login-error');
+    const button = this.querySelector('button[type="submit"]');
+    error.classList.add('hidden');
+    button.disabled = true;
+    try {
+      const response = await fetch('/todo/api/v1/token/', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+        body: JSON.stringify({
+          email: document.getElementById('login-email').value.trim(),
+          password: document.getElementById('login-password').value
+        })
+      });
+      if (!response.ok) throw new Error('Email or password is incorrect.');
+      const tokens = await response.json();
+      sessionStorage.setItem('todo.access', tokens.access);
+      sessionStorage.setItem('todo.refresh', tokens.refresh);
+      window.location.assign('/todo/');
+    } catch (err) {
+      error.textContent = err.message || 'Unable to sign in. Please try again.';
+      error.classList.remove('hidden');
+      button.disabled = false;
+    }
+  });
+</script>
 
 </body>
 </html>

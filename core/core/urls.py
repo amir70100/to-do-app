@@ -20,8 +20,9 @@ from django.conf import settings
 from django.conf.urls.static import static
 from django.contrib.auth import views as auth_views
 from django.views.generic import TemplateView, CreateView
-from django.contrib.auth.forms import UserCreationForm
 from django.urls import reverse_lazy
+from todo.forms import CustomUserCreationForm
+from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView
 
 # Register admin, account, task, and browsable API routes.
 urlpatterns = [
@@ -30,11 +31,13 @@ urlpatterns = [
     path('login/', auth_views.LoginView.as_view(template_name='accounts/login.html'), name='login'),
     path('signup/', CreateView.as_view(
         template_name='accounts/signup.html',
-        form_class=UserCreationForm,
-        success_url=reverse_lazy('index')
+        form_class=CustomUserCreationForm,
+        success_url=reverse_lazy('login')
     ), name='signup'),
     path('logout/', auth_views.LogoutView.as_view(next_page='login'), name='logout'),
     path('todo/', include('todo.urls')),
+    path('api/schema/', SpectacularAPIView.as_view(), name='schema'),
+    path('swagger/', SpectacularSwaggerView.as_view(url_name='schema'), name='swagger-ui'),
     path("api-auth/", include("rest_framework.urls"))
 ]
 

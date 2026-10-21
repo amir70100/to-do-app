@@ -4,3 +4,5 @@ Pillow==10.4.0
 djangorestframework
 markdown
 django-filter
+djangorestframework-simplejwt
+drf-spectacular

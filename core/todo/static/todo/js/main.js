@@ -2,16 +2,43 @@
   // Keep API requests scoped to the task endpoints served by this application.
   var API_BASE = '/todo/api/v1/tasks/';
 
-  // Read Django's CSRF cookie so state-changing requests pass middleware checks.
-  function getCookie(name) {
-    var value = "; " + document.cookie;
-    var parts = value.split("; " + name + "=");
-    if (parts.length === 2) return parts.pop().split(";").shift();
-    return null;
-  }
+  var ACCESS_KEY = 'todo.access';
+  var REFRESH_KEY = 'todo.refresh';
 
-  function csrfToken() {
-    return getCookie('csrftoken') || '';
+  // Refresh an expired access token once, then retry the original API call.
+  async function apiFetch(url, options) {
+    options = options || {};
+    options.headers = Object.assign({}, options.headers || {});
+    var access = sessionStorage.getItem(ACCESS_KEY);
+    if (!access) {
+      window.location.assign('/login/');
+      throw new Error('Authentication required');
+    }
+
+    options.headers.Authorization = 'Bearer ' + access;
+    var response = await fetch(url, options);
+    if (response.status !== 401) return response;
+
+    var refresh = sessionStorage.getItem(REFRESH_KEY);
+    if (refresh) {
+      var refreshResponse = await fetch('/todo/api/v1/token/refresh/', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+        body: JSON.stringify({ refresh: refresh })
+      });
+      if (refreshResponse.ok) {
+        var tokens = await refreshResponse.json();
+        sessionStorage.setItem(ACCESS_KEY, tokens.access);
+        if (tokens.refresh) sessionStorage.setItem(REFRESH_KEY, tokens.refresh);
+        options.headers.Authorization = 'Bearer ' + tokens.access;
+        return fetch(url, options);
+      }
+    }
+
+    sessionStorage.removeItem(ACCESS_KEY);
+    sessionStorage.removeItem(REFRESH_KEY);
+    window.location.assign('/login/');
+    return response;
   }
 
   var els = {
@@ -30,6 +57,16 @@
     editCancel: document.getElementById('modal-cancel'),
     editError: document.getElementById('edit-error')
   };
+
+  var logoutForm = document.querySelector('.logout-form');
+  var userName = document.querySelector('.user-name');
+  if (userName && sessionStorage.getItem(ACCESS_KEY)) userName.textContent = 'Signed in';
+  if (logoutForm) {
+    logoutForm.addEventListener('submit', function () {
+      sessionStorage.removeItem(ACCESS_KEY);
+      sessionStorage.removeItem(REFRESH_KEY);
+    });
+  }
 
   // Toggle visibility without assuming every page contains every component.
   function hide(el) { if (el) el.classList.add('hidden'); }
@@ -126,10 +163,9 @@
         var card = toggle.closest('.task-card');
         if (card) card.classList.toggle('done', toggle.checked);
 
-        fetch(url, {
+        apiFetch(url, {
           method: 'PATCH',
           headers: {
-            'X-CSRFToken': csrfToken(),
             'X-Requested-With': 'XMLHttpRequest',
             'Accept': 'application/json',
             'Content-Type': 'application/json'
@@ -152,9 +188,8 @@
 
   function loadTasks() {
     // Fetch the authenticated user's tasks and render either paginated or plain data.
-    fetch(API_BASE, {
+    apiFetch(API_BASE, {
       headers: {
-        'X-CSRFToken': csrfToken(),
         'Accept': 'application/json'
       },
       credentials: 'same-origin'
@@ -172,10 +207,9 @@
 
   function createTask(title) {
     // Submit a new task as JSON using the current session and CSRF token.
-    return fetch(API_BASE, {
+    return apiFetch(API_BASE, {
       method: 'POST',
       headers: {
-        'X-CSRFToken': csrfToken(),
         'X-Requested-With': 'XMLHttpRequest',
         'Accept': 'application/json',
         'Content-Type': 'application/json'
@@ -188,10 +222,9 @@
   function deleteTask(id) {
     // Ask before deletion, then refresh the list after a successful response.
     if (!confirm('Are you sure you want to delete this task?')) return;
-    fetch(API_BASE + id + '/', {
+    apiFetch(API_BASE + id + '/', {
       method: 'DELETE',
       headers: {
-        'X-CSRFToken': csrfToken(),
         'X-Requested-With': 'XMLHttpRequest',
         'Accept': 'application/json'
       },
@@ -248,10 +281,9 @@
       var title = els.editTitle.value.trim();
       if (!title) return;
       setError(els.editError, '');
-      fetch(API_BASE + id + '/', {
+      apiFetch(API_BASE + id + '/', {
         method: 'PATCH',
         headers: {
-          'X-CSRFToken': csrfToken(),
           'X-Requested-With': 'XMLHttpRequest',
           'Accept': 'application/json',
           'Content-Type': 'application/json'
@@ -275,5 +307,6 @@
   if (els.editCancel) els.editCancel.addEventListener('click', closeEditModal);
   if (els.editBackdrop) els.editBackdrop.addEventListener('click', closeEditModal);
 
-  loadTasks();
+  if (sessionStorage.getItem(ACCESS_KEY)) loadTasks();
+  else window.location.assign('/login/');
 })();
