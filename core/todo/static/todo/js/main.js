@@ -60,7 +60,19 @@
 
   var logoutForm = document.querySelector('.logout-form');
   var userName = document.querySelector('.user-name');
-  if (userName && sessionStorage.getItem(ACCESS_KEY)) userName.textContent = 'Signed in';
+  if (userName && sessionStorage.getItem(ACCESS_KEY)) {
+    apiFetch('/todo/api/v1/me/', {
+      headers: { 'Accept': 'application/json' },
+      credentials: 'same-origin'
+    }).then(function (response) {
+      if (!response.ok) throw new Error('Could not load account information');
+      return response.json();
+    }).then(function (user) {
+      userName.textContent = user.email;
+    }).catch(function (err) {
+      console.error('Could not load account information:', err);
+    });
+  }
   if (logoutForm) {
     logoutForm.addEventListener('submit', function () {
       sessionStorage.removeItem(ACCESS_KEY);
@@ -75,6 +87,17 @@
   function setError(el, msg) {
     if (!el) return;
     if (msg) { el.textContent = msg; show(el); } else { hide(el); }
+  }
+
+  function errorMessage(error, fallback) {
+    if (!error) return fallback;
+    if (typeof error === 'string') return error;
+    if (error.detail) return error.detail;
+    if (error.title) return Array.isArray(error.title) ? error.title[0] : error.title;
+    if (error.non_field_errors) return error.non_field_errors[0];
+    var firstField = Object.keys(error)[0];
+    if (firstField && Array.isArray(error[firstField])) return error[firstField][0];
+    return fallback;
   }
 
   function renderTasks(tasks) {
@@ -267,8 +290,8 @@
         els.createInput.value = '';
         loadTasks();
       }).catch(function (err) {
-        var msg = err && err.title ? Array.isArray(err.title) ? err.title[0] : err.title : 'Failed to add task.';
-        setError(els.createError, msg);
+        console.error('Task creation failed:', err);
+        setError(els.createError, errorMessage(err, 'Failed to add task. Please sign in again and retry.'));
       });
     });
   }
@@ -297,8 +320,8 @@
         closeEditModal();
         loadTasks();
       }).catch(function (err) {
-        var msg = err && err.title ? Array.isArray(err.title) ? err.title[0] : err.title : 'Failed to edit task.';
-        setError(els.editError, msg);
+        console.error('Task update failed:', err);
+        setError(els.editError, errorMessage(err, 'Failed to edit task. Please try again.'));
       });
     });
   }

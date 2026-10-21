@@ -2,7 +2,18 @@ from .serializers import TaskSerializer
 from ...models import Task
 from rest_framework.permissions import IsAuthenticated
 from rest_framework import viewsets
+from rest_framework.response import Response
+from rest_framework.views import APIView
 from .permissions import IsOwner
+
+
+class CurrentUserView(APIView):
+    """Return the identity associated with the supplied JWT access token."""
+
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        return Response({'email': request.user.email})
 
 
 class TaskViewSet(viewsets.ModelViewSet):
