@@ -6,13 +6,13 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('todo', '0002_remove_task_description'),
+        ("todo", "0002_remove_task_description"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='task',
-            name='completed',
+            model_name="task",
+            name="completed",
             field=models.BooleanField(default=False),
         ),
     ]
